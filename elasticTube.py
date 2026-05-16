@@ -10,14 +10,12 @@ aa = 1.0    # undisturbed radius of elastic tube [R in Fu & Ill'ichev]
 rho = 1.0   # fluid density
 rhow = 1.0  # membrane density
 mu = 1.0    # stain energy parameter
-Jm = 1.0    # another strain energy parameter
+Jm = 1.0    # another strain energy parametermatrices in numpy
 Eh = 1.0    # elastic parameter
 lam1inf = 1.0
 lam2inf = 1.0
 uinf = 0.0
 
-iload = 1
-isave = 1
 
 l1i = lam1inf
 l2i = lam2inf
@@ -59,7 +57,7 @@ for ilam in range(1, Nlam+1):
 
     # creating grid
     dxi = lam/(2*Mx+1)
-    xi = np.transpose(np.linspace(-Lx,Lx-dxi,2*Mx+1))
+    xi = np.linspace(-Lx,Lx-dxi,2*Mx+1).reshape(-1, 1)
 
     for iham in range(1, Nhamp+1):
         icount += 1
@@ -69,37 +67,25 @@ for ilam in range(1, Nlam+1):
 
     if icount == 1:
         bern = -99  # irrelevant in this code
-        if iload != 1:
-            cwave = 0.918
-            ufar = 0
-            hh0 = aa*lam1inf + ampl*np.cos(2*pi*xi/lam)
-            hh01 = hh0[0]
-            hh0_fft = np.fft.fft(hh0)
-            hh0_hat = hh0_fft[:2*Mx+1]
 
-            uu0 = ampl*np.sin(2*pi*xi/lam)
-            uu0_fft = np.fft.fft(uu0)
-            uu0_hat = uu0_fft[:2*Mx+1]
+        w0 = np.array(np.genfromtxt('wsave.csv', delimiter='')).reshape(-1, 1)
+        Mxsave = int(np.genfromtxt('Mxsave.csv', delimiter=''))
+        cwave = []
+        hh0_hat = []
+        uu0_hat = []
+        ufar = []
 
-        if iload == 1:
-            w0 = np.array(np.genfromtxt('wsave.csv', delimiter=''))
-            Mxsave = int(np.genfromtxt('Mxsave.csv', delimiter=''))
-            cwave = []
-            hh0_hat = []
-            uu0_hat = []
-            ufar = []
+        if Mx > Mxsave:
+            cwsave = w0[-1]
+            ufar = w0[-2]
+            Mdiff = (Nmode-1) - (Mxsave/2+1)
+            fr = (2*Nmode+1)/(Mxsave+1)
+            w0 = [fr*w0[:-1],np.zeros((Mdiff,1)),cwsave]
 
-            if Mx > Mxsave:
-                cwsave = w0[-1]
-                ufar = w0[-2]
-                Mdiff = (Nmode-1) - (Mxsave/2+1)
-                fr = (2*Nmode+1)/(Mxsave+1)
-                w0 = [fr*w0[:-1],np.zeros((Mdiff,1)),cwsave]
-
-            if Mx < Mxsave:
-                cwsave = w0[-1]
-                ufar = w0[-2]
-                w0 = [w0[:Nmode+1],cwsave]
+        if Mx < Mxsave:
+            cwsave = w0[-1]
+            ufar = w0[-2]
+            w0 = [w0[:Nmode+1],cwsave]
 
     if icount > 1:
         w0 = wconv
