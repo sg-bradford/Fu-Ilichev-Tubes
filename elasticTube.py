@@ -66,8 +66,6 @@ for ilam in range(1, Nlam+1):
     # making an initial guess
 
     if icount == 1:
-        bern = -99  # irrelevant in this code
-
         w0 = np.array(np.genfromtxt('wsave.csv', delimiter='')).reshape(-1, 1)
         Mxsave = int(np.genfromtxt('Mxsave.csv', delimiter=''))
         cwave = []
