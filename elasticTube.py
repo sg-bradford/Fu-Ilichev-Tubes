@@ -47,10 +47,9 @@ else:
 
 icount = 0
 
-wconv = []
 w0 = []
 
-for ilam in range(1, Nlam+1):
+for ilam in range(1, Nlam+1):   # only executed once
     lam = rlam1*2*pi + (ilam-1)*dlam
     Lx = 0.5*lam
     kwave = 2*pi/lam
@@ -73,22 +72,9 @@ for ilam in range(1, Nlam+1):
         uu0_hat = []
         ufar = []
 
-        if Mx > Mxsave:
-            cwsave = w0[-1]
-            ufar = w0[-2]
-            Mdiff = (Nmode-1) - (Mxsave/2+1)
-            fr = (2*Nmode+1)/(Mxsave+1)
-            w0 = [fr*w0[:-1],np.zeros((Mdiff,1)),cwsave]
-
-        if Mx < Mxsave:
-            cwsave = w0[-1]
-            ufar = w0[-2]
-            w0 = [w0[:Nmode+1],cwsave]
-
-    if icount > 1:
-        w0 = wconv
-
     # Main Calculation
+
+    wconv = eqsolve_axi_pad(Mx, Lx, hh0_hat, uu0_hat, ufar, cwave, icount, w0)
 
 
 
