@@ -1,32 +1,12 @@
 import numpy as np
 import csv
+from config import *
+import eqsolve_axi_pad
 
 pi = np.pi
 
 # Computation of axisymmetric periodic waves on a ferrofluid column
 # using the Fokas method
-
-aa = 1.0    # undisturbed radius of elastic tube [R in Fu & Ill'ichev]
-rho = 1.0   # fluid density
-rhow = 1.0  # membrane density
-mu = 1.0    # stain energy parameter
-Jm = 1.0    # another strain energy parametermatrices in numpy
-Eh = 1.0    # elastic parameter
-lam1inf = 1.0
-lam2inf = 1.0
-uinf = 0.0
-
-
-l1i = lam1inf
-l2i = lam2inf
-R = aa
-
-Nmode = 64  # desired number of Fourier modes
-
-Mx = 2*Nmode    # We use nMode modes and pad the Fourier series of h(x)
-# with nMode zeros. This accounts for aliasing errors which cannot
-# distinguish between exp(i*N*t) and exp(i*2*N*t) in the trapezium rule.
-# See Trefethen & Weideman SIAM Review 56 (2014), fig. 3.1.
 
 Nhamp = 1
 hamp1 = 0.1
@@ -74,9 +54,7 @@ for ilam in range(1, Nlam+1):   # only executed once
 
     # Main Calculation
 
-    wconv = eqsolve_axi_pad(Mx, Lx, hh0_hat, uu0_hat, ufar, cwave, icount, w0)
-
-
+    wconv = eqsolve_axi_pad.eqsolve_axi_pad(Mx, Lx, hh0_hat, uu0_hat, ufar, cwave, icount, w0)
 
 
 
