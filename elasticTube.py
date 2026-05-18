@@ -1,6 +1,6 @@
 import numpy as np
 import csv
-from config import *
+from config import * 3
 import eqsolve_axi_pad
 
 pi = np.pi

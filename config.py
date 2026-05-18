@@ -16,5 +16,3 @@ Eh = 1.0    # elastic parameter
 lam1inf = 1.0
 lam2inf = 1.0
 uinf = 0.0
-
-P0 = 99

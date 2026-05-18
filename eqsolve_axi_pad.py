@@ -79,17 +79,29 @@ def my_ODE(x, hx, Lx, w, kx):
 
     # compute values at infinity
 
-    lam1inf_e2 = lam1inf**2
-    lam1inf_e4 = lam1inf**4
-    lam2inf_e2 = lam2inf**2
-    lam2inf_e4 = lam2inf**4
+    sig1inf = mu*(lam1inf**4 * lam2inf**2 - 1) * Jm/(-1 - lam1inf**4 * lam2inf**2 + lam2inf**2 * (lam2inf**2 + Jm + 3) * lam1inf**2)
+    sig2inf = mu*(lam1inf**2 * lam2inf**4 - 1) * Jm/(-1 - lam1inf**4 * lam2inf**2 + lam2inf**2 * (lam2inf**2 + Jm + 3) * lam1inf**2)
 
-    laminf_exp24 = np.dot(lam1inf_e2, lam2inf_e4)
-    laminf_exp42 = np.dot(lam1inf_e4, lam2inf_e2)
+    P0 = sig1inf/(lam1inf**2 * lam2inf * aa)
 
-    sig1inf = np.dot(mu*(laminf_exp42 - 1), Jm/(-1 - laminf_exp42 + np.dot(np.dot(lam2inf_e2, -lam2inf_e2 + Jm + 3), lam1inf_e2)))
-    sig2inf = np.dot(mu*(laminf_exp24 - 1), Jm/(-1 - laminf_exp42 + np.dot(np.dot(lam2inf_e2, -lam2inf_e2 + Jm + 3), lam1inf_e2)))
+    uterm = aa*np.dot(np.dot(sig2, zd), 1/lam2**2)
+    utermfft = np.fft.fft(uterm)
+    uterm_x = np.real(np.fft.ifft(np.dot(1j*kx, utermfft)))
 
+    wterm = aa*np.dot(np.dot(sig2, hh_x), 1/lam2**2)
+    wtermfft = np.fft.fft(wterm)
+    wterm_x = np.real(np.ftt.ifft(np.dot(1j*kx, wtermfft)))
+
+    # Solve Fu & Il'ichev [2010] (2.6) in a travelling frame for pressure
     
+    press = np.dot(Eh*(-wterm_x + np.dot(sig1, 1/lam1) + rhow*aa*cw*hh_xx), 1/np.dot(hh, zd))
+
+    FF = (press - P0)/rho   # cf. eq. (3.4) in our [Parau's] AFM paper
+
+    Sx = np.dot(lam2inf + uu_x, hh_x)
+
+    pp = np.sqrt(np.dot(1+Sx**2))
+
+
     return -1
 
