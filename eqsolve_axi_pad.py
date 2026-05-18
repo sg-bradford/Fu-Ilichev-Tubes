@@ -10,8 +10,8 @@ from config import *
 def eqsolve_axi_pad(Mx,Lx,h0_hat,u0_hat,ufar,cw,icount,w0):
 
     hx = 2*Lx/(2*Mx+1)
-    x = np.linspace(-Lx,Lx-hx,2*Mx+1).reshape(-1, 1)
-    kx = (np.pi/Lx)*np.hstack([np.array(range(Mx+1)), np.array(range(-Mx,0))]).reshape(-1, 1)
+    x = np.linspace(-Lx,Lx-hx,2*Mx+1)
+    kx = (np.pi/Lx)*np.hstack([np.array(range(Mx+1)), np.array(range(-Mx,0))])
 
     # Solve via Newton's method
 
@@ -25,7 +25,7 @@ def eqsolve_axi_pad(Mx,Lx,h0_hat,u0_hat,ufar,cw,icount,w0):
     k = 1
     corr = 99
     while corr > tol:
-        f = my_ODE(x, hx, Lx, w)
+        f = my_ODE(x, hx, Lx, w, kx)
     return -1
 
 
@@ -34,28 +34,28 @@ def my_ODE(x, hx, Lx, w, kx):
 
     # note that x is denoted Z in Fu & Il'ichev
 
-    h_hat = np.zeros(Mx+1).reshape(-1, 1)
+    h_hat = np.zeros(Mx+1, dtype = complex)
     h_hat[0] = w[0] # zero frequency
-    h_hat[1:Mx/2+1] = w[1:Mx/2+1]
-    h_fft = np.vstack([h_hat, np.flipup(np.conj(h_hat[1:Mx+1]))])       # POTENTIAL PROBLEM HERE, FFT ASYMMETRIC
+    h_hat[1:int(Mx/2)+1] = w[1:int(Mx/2)+1]
+    h_fft = np.hstack([h_hat, np.flip(np.conj(h_hat[1:Mx+1]))])       # POTENTIAL PROBLEM HERE, FFT ASYMMETRIC
     
-    st = Mx/2+1
+    st = int(Mx/2)+2
 
-    u_hat = np.zeros(Mx+1).reshape(-1, 1)
-    u_hat[0] = w[st]    # zero frequency is zero since function u is odd
-    u_hat[1:Mx/2+1] = 1j*w[st+1:st+Mx/2]
-    u_fft = np.vstack([u_hat, np.flipup(np.conj(u_hat[1:Mx+1]))])
+    u_hat = np.zeros(Mx+1, dtype = complex)
+    u_hat[0] = w[st - 1]    # zero frequency is zero since function u is odd
+    u_hat[1:int(Mx/2)+1] = 1j*w[st:st + int(Mx/2)]
+    u_fft = np.hstack([u_hat, np.flip(np.conj(u_hat[1:Mx+1]))])
 
     cw = w[-1]
     ufar = w[-2]
 
     hh = np.real(np.fft.ifft(h_fft))
-    hh_x = np.real(np.fft.ifft(np.dot(1j*kx, h_fft)))
-    hh_xx = np.real(np.fft.ifft(np.dot((1j*kx)**2, h_fft)))
+    hh_x = np.real(np.fft.ifft(1j*kx * h_fft))
+    hh_xx = np.real(np.fft.ifft((1j*kx)**2 * h_fft))
 
     uu = ufar*x + np.real(np.fft.ifft(u_fft))
-    uu_x = ufar + np.real(np.fft.ifft(np.dot(1j*kx, u_fft)))
-    uu_xx = np.real(np.fft.ifft(np.dot((1j*kx)**2, u_fft)))
+    uu_x = ufar + np.real(np.fft.ifft(1j*kx * u_fft))
+    uu_xx = np.real(np.fft.ifft((1j*kx)**2 * u_fft))
 
     # Elastic strain energy [Ghent model of Fu & Il'ichev eq. (4), (5)]
 
@@ -71,11 +71,11 @@ def my_ODE(x, hx, Lx, w, kx):
     lam2_e2 = lam2**2
     lam2_e4 = lam2**4
 
-    lam_exp24 = np.dot(lam1_e2, lam2_e4)
-    lam_exp42 = np.dot(lam1_e4, lam2_e2)
+    lam_exp24 = lam1_e2 * lam2_e4
+    lam_exp42 = lam1_e4 * lam2_e2
 
-    sig1 = np.dot(mu*(lam_exp42 - 1), Jm/(-1 - lam_exp42 + np.dot(np.dot(lam2_e2, -lam2_e2 + Jm + 3), lam1_e2)))
-    sig2 = np.dot(mu*(lam_exp24 - 1), Jm/(-1 - lam_exp42 + np.dot(np.dot(lam2_e2, -lam2_e2 + Jm + 3), lam1_e2)))
+    sig1 = mu * (lam_exp42 - 1) * Jm/(-1 - lam_exp42 + (lam2_e2 * -lam2_e2 + Jm + 3) * lam1_e2)
+    sig2 = mu * (lam_exp24 - 1) * Jm/(-1 - lam_exp42 + (lam2_e2 * -lam2_e2 + Jm + 3) * lam1_e2)
 
     # compute values at infinity
 
@@ -84,24 +84,22 @@ def my_ODE(x, hx, Lx, w, kx):
 
     P0 = sig1inf/(lam1inf**2 * lam2inf * aa)
 
-    uterm = aa*np.dot(np.dot(sig2, zd), 1/lam2**2)
+    uterm = aa * sig2 * zd / lam2**2
     utermfft = np.fft.fft(uterm)
-    uterm_x = np.real(np.fft.ifft(np.dot(1j*kx, utermfft)))
+    uterm_x = np.real(np.fft.ifft(1j*kx * utermfft))
 
-    wterm = aa*np.dot(np.dot(sig2, hh_x), 1/lam2**2)
+    wterm = aa * sig2 * hh_x / lam2**2
     wtermfft = np.fft.fft(wterm)
-    wterm_x = np.real(np.ftt.ifft(np.dot(1j*kx, wtermfft)))
+    wterm_x = np.real(np.fft.ifft(1j*kx * wtermfft))
 
     # Solve Fu & Il'ichev [2010] (2.6) in a travelling frame for pressure
     
-    press = np.dot(Eh*(-wterm_x + np.dot(sig1, 1/lam1) + rhow*aa*cw*hh_xx), 1/np.dot(hh, zd))
+    press = Eh * (-wterm_x + sig1 / lam1 + rhow * aa * cw * hh_xx) / (hh * zd)
 
-    FF = (press - P0)/rho   # cf. eq. (3.4) in our [Parau's] AFM paper
+    FF = (press - P0) / rho   # cf. eq. (3.4) in our [Parau's] AFM paper
 
-    Sx = np.dot(lam2inf + uu_x, hh_x)
+    Sx = (lam2inf + uu_x) * hh_x
 
-    pp = np.sqrt(np.dot(1+Sx**2))
-
-
+    print(Sx)
     return -1
 

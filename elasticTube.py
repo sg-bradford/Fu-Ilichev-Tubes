@@ -1,6 +1,5 @@
 import numpy as np
-import csv
-from config import * 3
+from config import *
 import eqsolve_axi_pad
 
 pi = np.pi
@@ -36,7 +35,7 @@ for ilam in range(1, Nlam+1):   # only executed once
 
     # creating grid
     dxi = lam/(2*Mx+1)
-    xi = np.linspace(-Lx,Lx-dxi,2*Mx+1).reshape(-1, 1)
+    xi = np.linspace(-Lx,Lx-dxi,2*Mx+1)
 
     for iham in range(1, Nhamp+1):
         icount += 1
@@ -45,7 +44,7 @@ for ilam in range(1, Nlam+1):   # only executed once
     # making an initial guess
 
     if icount == 1:
-        w0 = np.array(np.genfromtxt('wsave.csv', delimiter='')).reshape(-1, 1)
+        w0 = np.array(np.genfromtxt('wsave.csv', delimiter=''))
         Mxsave = int(np.genfromtxt('Mxsave.csv', delimiter=''))
         cwave = []
         hh0_hat = []

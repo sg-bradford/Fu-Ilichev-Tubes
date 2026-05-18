@@ -1,6 +1,5 @@
 import numpy as np
 
-arr = np.array([1,2,3,4])
+test = int(128/2)+1
 
-print(arr)
-print(len(arr))
+print(type(test))
