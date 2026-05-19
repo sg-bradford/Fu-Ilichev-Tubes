@@ -53,7 +53,9 @@ for ilam in range(1, Nlam+1):   # only executed once
 
     # Main Calculation
 
-    wconv = eqsolve_axi_pad.eqsolve_axi_pad(Mx, Lx, hh0_hat, uu0_hat, ufar, cwave, icount, w0)
+    wconv = eqsolve_axi_pad.eqsolve_axi_pad(Mx, Lx, hh0_hat, uu0_hat, ufar, cwave, icount, w0, ampl)
+
+    
 
 
 

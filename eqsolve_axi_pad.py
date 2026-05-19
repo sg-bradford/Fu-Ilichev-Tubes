@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 from config import *
 
 # We seek a solution by assuming the truncated Fourier series for h(xi)
@@ -7,7 +8,7 @@ from config import *
 # NB: we exclude final point in period
 # from collacation set
 
-def eqsolve_axi_pad(Mx,Lx,h0_hat,u0_hat,ufar,cw,icount,w0):
+def eqsolve_axi_pad(Mx,Lx,h0_hat,u0_hat,ufar,cw,icount,w0, ampl):
 
     hx = 2*Lx/(2*Mx+1)
     x = np.linspace(-Lx,Lx-hx,2*Mx+1)
@@ -25,12 +26,49 @@ def eqsolve_axi_pad(Mx,Lx,h0_hat,u0_hat,ufar,cw,icount,w0):
     k = 1
     corr = 99
     while corr > tol:
-        f = my_ODE(x, hx, Lx, w, kx)
-    return -1
+        f = my_ODE(x, hx, Lx, w, kx, ampl)
+    
+        # build Jacobian
+
+        jac = np.zeros((Nw, Nw))
+
+        rat = 1
+        for j in range(Nw):
+            w[j] += eps * rat
+            f1 = my_ODE(x, hx, Lx, w, kx, ampl)
+            w[j] -= eps * rat
+
+            for i in range(Nw):
+                jac[i, j] = (f1[i] - f[i]) / eps
+
+        # solve linear Jacobian system
+
+        rhs = -f
+        adj = np.linalg.solve(jac, rhs)
+        djac = abs(np.linalg.det(jac))
+
+        # update guesses
+
+        wold = w
+        ssum = 0
+        for i in range(Nw):
+            ssum += rhs[i] ** 2
+            w[i] += adj[i]
+
+        corr = np.sqrt(abs(ssum))
+        print("     k       corr")
+        print(str(k) + "    " + str(corr))
+
+        if k > 50:
+            print("******** Newton iterations did not converge! *********")
+        
+    w = wold
+    print("Converged!")
 
 
 
-def my_ODE(x, hx, Lx, w, kx):
+
+def my_ODE(x, hx, Lx, w, kx, ampl):
 
     # note that x is denoted Z in Fu & Il'ichev
 
@@ -100,6 +138,45 @@ def my_ODE(x, hx, Lx, w, kx):
 
     Sx = (lam2inf + uu_x) * hh_x
 
-    print(Sx)
-    return -1
+    pp = np.sqrt((1 + Sx ** 2) * ((lam2inf * cw - uinf) ** 2 - 2 * FF))
+
+    npp = np.linalg.norm(pp)
+
+    # Integrand of Fokas Bernoulli integral
+
+    fokint = np.zeros(int(Mx / 2))
+
+    for nn in range(1, int(Mx / 2) + 1):
+        eulerian_period = 2 * Lx * (lam2inf + ufar)
+        kk = 2 * np.pi * nn / eulerian_period
+
+        ii1 = sp.special.iv(1, kk * hh)
+
+        mk = max(hh)
+        sc = sp.special.iv(1, kk * mk)
+        xp = lam2inf * x + uu   # Convert Eulerian to Lagrangian (see p. 4 of Notes)
+        dxp = lam2inf + uu_x
+        fokas = (1 / sc) * hh * pp * ii1 * np.cos(kk * xp) * dxp    # assume wave even in x
+
+        # Evaluate Fokas integral using periodic trapezium rule
+
+        fokint[nn - 1] = hx * sum(fokas)
+
+    # Fu & Il'ichev [2010] equation (2.5) in a travelling frame
+    fu = uterm_x - (press / Eh) * hh * hh_x - rhow * aa * cw ** 2 * uu_xx
+    fuill = np.imag(np.fft.fft(fu))
+
+    # Bernoulli condition (do *not* include k = 0)
+
+    F_col = np.zeros(Mx + 4)
+
+    F_col[:int(Mx / 2)] = fokint[:int(Mx / 2)]
+    F_col[int(Mx / 2):Mx] = fuill[1:int(Mx / 2) + 1]
+    F_col[Mx] = w[int(Mx / 2) + 1]
+    
+    F_col[Mx + 1] = hh[0] - lam1inf * aa
+    F_col[Mx + 2] = (max(hh) - min(hh)) - 2 * ampl
+    F_col[Mx + 3] = uu_x[0]
+
+    return F_col
 
