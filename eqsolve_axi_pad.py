@@ -112,12 +112,13 @@ def my_ODE(x, hx, Lx, w, kx, ampl):
     lam_exp24 = lam1_e2 * lam2_e4
     lam_exp42 = lam1_e4 * lam2_e2
 
-    sig1 = mu * (lam_exp42 - 1) * Jm/(-1 - lam_exp42 + (lam2_e2 * -lam2_e2 + Jm + 3) * lam1_e2)
-    sig2 = mu * (lam_exp24 - 1) * Jm/(-1 - lam_exp42 + (lam2_e2 * -lam2_e2 + Jm + 3) * lam1_e2)
+    sig1 = mu * (lam_exp42 - 1) * Jm/(-1 - lam_exp42 + lam2_e2 * (-lam2_e2 + Jm + 3) * lam1_e2)
+    sig2 = mu * (lam_exp24 - 1) * Jm/(-1 - lam_exp42 + lam2_e2 * (-lam2_e2 + Jm + 3) * lam1_e2)
 
     # compute values at infinity
 
     sig1inf = mu*(lam1inf**4 * lam2inf**2 - 1) * Jm/(-1 - lam1inf**4 * lam2inf**2 + lam2inf**2 * (lam2inf**2 + Jm + 3) * lam1inf**2)
+    # unused variable - could be a problem?
     sig2inf = mu*(lam1inf**2 * lam2inf**4 - 1) * Jm/(-1 - lam1inf**4 * lam2inf**2 + lam2inf**2 * (lam2inf**2 + Jm + 3) * lam1inf**2)
 
     P0 = sig1inf/(lam1inf**2 * lam2inf * aa)
@@ -145,13 +146,12 @@ def my_ODE(x, hx, Lx, w, kx, ampl):
     # Integrand of Fokas Bernoulli integral
 
     fokint = np.zeros(int(Mx / 2))
+    eulerian_period = 2 * Lx * (lam2inf + ufar)
 
     for nn in range(1, int(Mx / 2) + 1):
-        eulerian_period = 2 * Lx * (lam2inf + ufar)
+        
         kk = 2 * np.pi * nn / eulerian_period
-
         ii1 = sp.special.iv(1, kk * hh)
-
         mk = max(hh)
         sc = sp.special.iv(1, kk * mk)
         xp = lam2inf * x + uu   # Convert Eulerian to Lagrangian (see p. 4 of Notes)
