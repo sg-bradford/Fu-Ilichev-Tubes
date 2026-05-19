@@ -1,6 +1,7 @@
 import numpy as np
 from config import *
 import eqsolve_axi_pad
+import matplotlib.pyplot as plt
 
 pi = np.pi
 
@@ -55,8 +56,12 @@ for ilam in range(1, Nlam+1):   # only executed once
 
     wconv = eqsolve_axi_pad.eqsolve_axi_pad(Mx, Lx, hh0_hat, uu0_hat, ufar, cwave, icount, w0, ampl)
 
+    plt.plot(wconv)
+    plt.show()    
+
     h0_hat = np.zeros(Mx+1, dtype = complex)
     h0_hat[0] = wconv[0]
+    
 
     
 

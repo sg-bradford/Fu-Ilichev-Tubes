@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 from config import *
+import matplotlib.pyplot as plt
 
 # We seek a solution by assuming the truncated Fourier series for h(xi)
 
@@ -62,8 +63,9 @@ def eqsolve_axi_pad(Mx,Lx,h0_hat,u0_hat,ufar,cw,icount,w0, ampl):
         if k > 50:
             print("******** Newton iterations did not converge! *********")
         
-    w = wold
     print("Converged!")
+
+    return wold
 
 
 
@@ -147,15 +149,15 @@ def my_ODE(x, hx, Lx, w, kx, ampl):
 
     fokint = np.zeros(int(Mx / 2))
     eulerian_period = 2 * Lx * (lam2inf + ufar)
+    mk = max(hh)
+    xp = lam2inf * x + uu   # Convert Eulerian to Lagrangian (see p. 4 of Notes)
+    dxp = lam2inf + uu_x
 
     for nn in range(1, int(Mx / 2) + 1):
         
         kk = 2 * np.pi * nn / eulerian_period
         ii1 = sp.special.iv(1, kk * hh)
-        mk = max(hh)
         sc = sp.special.iv(1, kk * mk)
-        xp = lam2inf * x + uu   # Convert Eulerian to Lagrangian (see p. 4 of Notes)
-        dxp = lam2inf + uu_x
         fokas = (1 / sc) * hh * pp * ii1 * np.cos(kk * xp) * dxp    # assume wave even in x
 
         # Evaluate Fokas integral using periodic trapezium rule
