@@ -7,6 +7,8 @@ Mx = 128    # We use nMode modes and pad the Fourier series of h(x)
 # distinguish between exp(i*N*t) and exp(i*2*N*t) in the trapezium rule.
 # See Trefethen & Weideman SIAM Review 56 (2014), fig. 3.1.
 
+st = 66
+
 aa = 1.0    # undisturbed radius of elastic tube [R in Fu & Ill'ichev]
 rho = 1.0   # fluid density
 rhow = 1.0  # membrane density

@@ -79,8 +79,6 @@ def my_ODE(x, hx, Lx, w, kx, ampl):
     h_hat[1:int(Mx/2)+1] = w[1:int(Mx/2)+1]
     h_fft = np.hstack([h_hat, np.flip(np.conj(h_hat[1:Mx+1]))])       # POTENTIAL PROBLEM HERE, FFT ASYMMETRIC
     
-    st = int(Mx/2)+2
-
     u_hat = np.zeros(Mx+1, dtype = complex)
     u_hat[0] = w[st - 1]    # zero frequency is zero since function u is odd
     u_hat[1:int(Mx/2)+1] = 1j*w[st:st + int(Mx/2)]
