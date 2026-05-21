@@ -99,12 +99,18 @@ fig, ax = plt.subplots(3, 1)
 
 ax[0].plot(xp, fp/mfp, '-r')
 ax[0].plot(xi, hsol, 'ob')
+ax[0].legend(["fp/mfp", "hsol"])
+ax[0].grid()
 
 ax[1].plot(xi, usol, '-k')
 ax[1].plot(xi, usold, '-r')
+ax[1].legend(["usol", "usold"])
+ax[1].grid()
 
 ax[2].plot(xi, hsol, '-k')
 ax[2].plot(xi, 1 - hsol, '-r')
+ax[2].legend(["hsol", "1-hsol"])
+ax[2].grid()
 
 plt.show()
 
