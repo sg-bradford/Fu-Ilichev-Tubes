@@ -14,7 +14,7 @@ hamp2 = 0.1
 if Nhamp == 1:
     dhamp = 0
 else:
-    dhamp = (hamp2 - hamp1)/(Nhamp-1)
+    dhamp = (hamp2-hamp1)/(Nhamp-1)
 
 Nlam = 1
 rlam1 = 13.0    # multiple of 2*pi
@@ -23,7 +23,7 @@ rlam2 = 13.0
 if Nlam == 1:
     dlam = 0
 else:
-    dlam = 2*pi*(rlam2-rlam1)/(Nlam-1)
+    dlam = 2*pi*(rlam2 - rlam1)/(Nlam - 1)
 
 icount = 0
 
@@ -35,17 +35,17 @@ u1 = np.array([Nlam])
 lamm = np.array([Nlam])
 
 for ilam in range(Nlam):   # only executed once
-    lam = rlam1 * 2 * pi + ilam *dlam
-    Lx = 0.5 * lam
-    kwave = 2 * pi / lam
+    lam = rlam1*2*pi+ilam*dlam
+    Lx = 0.5*lam
+    kwave = 2*pi/lam
 
     # creating grid
-    dxi = lam / (2 * Mx+1)
-    xi = np.linspace(-Lx,Lx-dxi,2*Mx+1)
+    dxi = lam/(2*Mx + 1)
+    xi = np.linspace(-Lx,Lx - dxi,2*Mx + 1)
 
     for iham in range(Nhamp):   # only executed once
         icount += 1
-        ampl = hamp1 + iham *dhamp
+        ampl = hamp1 + iham*dhamp
 
         # making an initial guess
 
@@ -63,18 +63,18 @@ for ilam in range(Nlam):   # only executed once
 
         h0_hat = np.zeros(Mx + 1, dtype = complex)
         h0_hat[0] = wconv[0]
-        h0_hat[1:int(Mx / 2) + 1] = wconv[1:int(Mx / 2) + 1]
+        h0_hat[1:int(Mx/2) + 1] = wconv[1:int(Mx/2) + 1]
         h0_fft = np.hstack([h0_hat, np.flip(np.conj(h0_hat[1:Mx + 1]))])
         hsol = np.real(np.fft.ifft(h0_fft))
 
-        u0_hat = np.zeros(Mx + 1, dtype = complex)
-        u0_hat[0] = 1j * wconv[st - 1]
-        u0_hat[1:int(Mx / 2) + 1] = 1j * wconv[st:st + int(Mx / 2)]
+        u0_hat = np.zeros(Mx + 1, dtype=complex)
+        u0_hat[0] = 1j*wconv[st - 1]
+        u0_hat[1:int(Mx/2) + 1] = 1j*wconv[st:st + int(Mx/2)]
         u0_fft = np.hstack([u0_hat, np.flip(np.conj(u0_hat[1:Mx + 1]))])
         ufar = wconv[-2]
-        usol = ufar * xi + np.real(np.fft.ifft(u0_fft))
-        kx = (np.pi / Lx) * np.hstack([np.array(range(Mx + 1)), np.array(range(-Mx, 0))])
-        usold = ufar + np.real(np.fft.ifft(1j * kx * u0_fft))
+        usol = ufar*xi + np.real(np.fft.ifft(u0_fft))
+        kx = (np.pi/Lx)*np.hstack([np.array(range(Mx + 1)), np.array(range(-Mx, 0))])
+        usold = ufar + np.real(np.fft.ifft(1j*kx*u0_fft))
 
         cww[iham] = wconv[-1]
         amp[iham] = ampl
@@ -86,18 +86,18 @@ for ilam in range(Nlam):   # only executed once
 # some extra stuff
 
 xp = np.linspace(-Lx, Lx, num = 100, endpoint = True)
-fp = wconv[0] / (2 * Mx + 1)
+fp = wconv[0]/(2*Mx + 1)
 mfp = 1
-for ip in range(1, int(Mx / 2) + 1):
-    jp = int(Mx / 2) - ip + 1
-    aco = (wconv[ip] * np.cos(ip * np.pi)) / (2 * Mx + 1)
-    fp += aco * np.exp(1j * ip * 2 * np.pi * xp / lam) + np.conj(aco) * np.exp(-1j * ip * 2 * np.pi * xp / lam)
+for ip in range(1, int(Mx/2) + 1):
+    jp = int(Mx/2) - ip + 1
+    aco = (wconv[ip]*np.cos(ip*np.pi))/(2*Mx + 1)
+    fp += aco*np.exp(1j*ip*2*np.pi*xp/lam) + np.conj(aco)*np.exp(-1j*ip*2*np.pi*xp/lam)
 
 # Plotting solution
 
 fig, ax = plt.subplots(3, 1)
 
-ax[0].plot(xp, fp / mfp, '-r')
+ax[0].plot(xp, fp/mfp, '-r')
 ax[0].plot(xi, hsol, 'ob')
 
 ax[1].plot(xi, usol, '-k')
